@@ -1,0 +1,35 @@
+# INDEX: DCL AD-Pilot Attribution Language Configuration
+# Version: 3.0 (Post-Iteration 3)
+
+aliases:
+  # # Base DCL God-Mode Entities
+  # entities:
+  #   PromptModule: dcl-god-mode/entities/prompt_module/1.1 
+
+  # Domain-Specific Operations (AD-Pilot)
+  operations:
+    INFER: ad-pilot/operations/infer/3.3
+    DEFINE: ad-pilot/operations/define/1.6
+    ENRICH: ad-pilot/operations/enrich/1.4
+    EXTRACT: ad-pilot/operations/extract/1.2
+
+  # Domain Modifiers (Lenses)
+  modifiers:
+    # System Constraints
+    GRAMMAR: dcl-core/knowledges/framework/dcl_grammar/2.2  
+    SCHEMA: dcl-core/modifiers/dcl_specification/3.0
+    
+    # AD-Pilot Market Lenses
+    LENS_GEO: modifiers/market/geo/1.0
+    LENS_EXPERTISE: modifiers/market/expertise/1.2
+    LENS_SCENARIO: modifiers/market/scenario/1.3
+    LENS_VALUE: modifiers/market/value/1.0
+
+  # Knowledge Frameworks
+  knowledges:
+    AXES_MODEL: knowledges/framework/3-axes_attribute_model/2.1
+
+  # Semantic Foundations
+  ontologies:
+    dclc: dcl-core/knowledges/ontology/dcl-core.ttl
+    ctx: dcl-core/knowledges/ontology/agent_context_onlology.ttl
