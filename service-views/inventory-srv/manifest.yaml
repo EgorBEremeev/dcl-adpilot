@@ -1,0 +1,6 @@
+# service-views/inventory-srv/manifest.yaml
+service_id: "inventory-srv"
+operations:
+  - operation_id: "extract_item_data"
+    compiled_spec: "specs/extract_item_data.yaml"
+    dcl_instruction: "Extracts structured item attributes based on a dynamic OpenAPI schema."

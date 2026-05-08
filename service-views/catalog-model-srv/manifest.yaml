@@ -1,0 +1,9 @@
+# service-views/catalog-model-srv/manifest.yaml
+service_id: "catalog-model-srv"
+operations:
+  - operation_id: "infer_category"
+    compiled_spec: "specs/infer_category.yaml"
+    dcl_instruction: "Determines the product category based on raw text description."
+  - operation_id: "infer_attribute_schema"
+    compiled_spec: "specs/infer_attribute_schema.yaml"
+    dcl_instruction: "Generates an attribute schema for a given category path."

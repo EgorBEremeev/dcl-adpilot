@@ -1,0 +1,22 @@
+# service-views/inventory-srv/specs/extract_item_data.yaml
+service_id: "inventory-srv"
+workflow_id: "inventory_management"
+operation_id: "extract_item_data"
+dcl_bundle: "adpilot-core"
+dcl_instruction: "Extracts structured item attributes based on a dynamic OpenAPI schema."
+invocation:
+  model_id: "gemini-2.0-flash"
+  thinking_budget: 0
+  system_instruction: |
+    Ты — помощник по инвентаризации. Твоя задача — извлечь характеристики товара из текста в соответствии с предоставленной схемой.
+    
+    Входные данные:
+    - <source_text>: Текст с описанием товара.
+    
+    Требования:
+    1. Тщательно проанализируй <source_text>.
+    2. Извлеки все атрибуты, указанные в response_schema.
+    3. Если какой-то атрибут отсутствует в тексте, не включай его в ответ, если он не помечен как обязательный.
+    4. Верни чистый JSON, строго соответствующий схеме.
+  output:
+    mode: "dynamic_structured"

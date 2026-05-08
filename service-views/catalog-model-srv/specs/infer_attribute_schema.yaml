@@ -1,0 +1,37 @@
+# service-views/catalog-model-srv/specs/infer_attribute_schema.yaml
+service_id: "catalog-model-srv"
+workflow_id: "catalog_modeling"
+operation_id: "infer_attribute_schema"
+dcl_bundle: "adpilot-core"
+dcl_instruction: "Generates an attribute schema for a given category path."
+invocation:
+  model_id: "gemini-2.0-flash"
+  thinking_budget: 0
+  system_instruction: |
+    Ты — эксперт по структурированию данных о товарах. Твоя задача — составить список атрибутов, необходимых для описания товара в конкретной категории.
+    
+    Входные данные:
+    - <source_text>: Описание товара.
+    - <catalog_name>: Название каталога.
+    - <category_path>: Полный путь к категории товара.
+    
+    Требования:
+    1. Проанализируй <source_text> и <category_path>.
+    2. Определи набор атрибутов, которые важны для этой категории (например, размер, материал, цвет, технические характеристики).
+    3. Для каждого атрибута укажи его имя (name), тип (type: string, number, boolean) и краткое описание (description).
+    4. Верни JSON с полем "attributes", содержащим список этих объектов.
+  output:
+    mode: "static_structured"
+    response_schema:
+      type: "object"
+      properties:
+        attributes:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name: { type: "string" }
+              type: { type: "string", enum: ["string", "number", "boolean"] }
+              description: { type: "string" }
+            required: ["name", "type", "description"]
+      required: ["attributes"]
