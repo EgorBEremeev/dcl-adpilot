@@ -5,7 +5,7 @@ operation_id: "infer_attribute_schema"
 dcl_bundle: "adpilot-core"
 dcl_instruction: "Generates an attribute schema for a given category path."
 invocation:
-  model_id: "gemini-2.0-flash"
+  model_id: "gemini-2.5-flash"
   thinking_budget: 0
   system_instruction: |
     Ты — эксперт по структурированию данных о товарах. Твоя задача — составить список атрибутов, необходимых для описания товара в конкретной категории.

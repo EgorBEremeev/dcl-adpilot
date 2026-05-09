@@ -5,7 +5,7 @@ operation_id: "extract_item_data"
 dcl_bundle: "adpilot-core"
 dcl_instruction: "Extracts structured item attributes based on a dynamic OpenAPI schema."
 invocation:
-  model_id: "gemini-2.0-flash"
+  model_id: "gemini-2.5-flash-lite"
   thinking_budget: 0
   system_instruction: |
     Ты — помощник по инвентаризации. Твоя задача — извлечь характеристики товара из текста в соответствии с предоставленной схемой.

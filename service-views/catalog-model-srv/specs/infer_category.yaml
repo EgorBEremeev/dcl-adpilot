@@ -5,7 +5,7 @@ operation_id: "infer_category"
 dcl_bundle: "adpilot-core"
 dcl_instruction: "Determines the product category based on raw text description."
 invocation:
-  model_id: "gemini-2.0-flash"
+  model_id: "gemini-2.5-flash"
   thinking_budget: 0
   system_instruction: |
     Ты — эксперт по классификации товаров. Твоя задача — определить наиболее подходящую категорию для товара на основе его текстового описания.
@@ -17,7 +17,7 @@ invocation:
     Требования:
     1. Проанализируй <source_text>.
     2. Найди в <catalog_state> наиболее подходящую категорию.
-    3. Верни JSON с полем "candidates", содержащим список объектов с "category_id", "confidence" (0-1) и "reasoning".
+    3. Верни JSON, строго соответствующий схеме. Поле "candidates", должно содержать список объектов с "category_id", "confidence" (0-1) и "reasoning", .
     4. Если подходящей категории нет, верни пустой список candidates.
   output:
     mode: "static_structured"
