@@ -8,8 +8,8 @@ aliases:
 
   # Domain-Specific Operations (AD-Pilot)
   operations:
-    INFER: ad-pilot/operations/infer/2.3
-    DEFINE: ad-pilot/operations/define/3.2
+    RECONSTRUCT: ad-pilot/operations/reconstruct/2.3
+    DEFINE: ad-pilot/operations/define/3.3
     ENRICH: ad-pilot/operations/enrich/1.4
     EXTRACT: ad-pilot/operations/extract/1.2
 
