@@ -23,12 +23,12 @@ operations:
       FROM Entity('Market_Context_Fingerprint')
       USING AXES_MODEL
     
-  # - operation_id: "enrich_geo_attributes"
-  #   compiled_spec: "specs/enrich_geo_attributes.yaml"
-  #   dcl_instruction: |
-  #     ENRICH Entity('Attribute_Schema')
-  #     FROM Entity('Attribute_Schema')
-  #     USING LENS_GEO(target_region='Bulgaria'), AXES_MODEL
+  - operation_id: "enrich_geo_attributes"
+    compiled_spec: "specs/enrich_geo_attributes.yaml"
+    dcl_instruction: |
+      ENRICH Entity('Attribute_Schema')
+      FROM Entity('Attribute_Schema')
+      USING LENS_GEO(target_region='Bulgaria'), AXES_MODEL
 
   # - operation_id: "enrich_use_cases_attributes"
   #   compiled_spec: "specs/enrich_use_cases_attributes.yaml"
