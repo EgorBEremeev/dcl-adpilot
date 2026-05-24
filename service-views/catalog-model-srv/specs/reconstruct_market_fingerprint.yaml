@@ -91,7 +91,7 @@ invocation:
     output_contract: 
       - name: "Market_Fingerprint"
       - type: "string"
-      - description: "Аналитический текст, описывающий предметную область и рыночный контекст категории товара."
+      - description: "Аналитический текст в markdown форматировании, описывающий предметную область и рыночный контекст категории товара."
 
     # VERIFICATION
     checklist:
