@@ -51,15 +51,12 @@ decoding_patterns:
 
 # INTERFACE
 slots:
-  - name: "target_context"
+  - name: "target_use_case"
     type: "string"
     description: "Описание сценария (напр. 'High-Altitude Mountaineering', 'Product Photography', 'Kids Daily Use')."
-  - name: "target_category"
-    type: "string"
-    description: "Категория товара."
 
 # INSTRUCTION INJECTION
 process_modification: |
-  В рамках операции ENRICH для сценария '{target_context}':
+  В рамках операции ENRICH для сценария '{target_use_case}':
   Примени последовательно ВСЕ паттерны из блока `decoding_patterns` для выявления релевантных атрибутов сценария. 
-  Каждый найденный атрибут должен быть логическим следствием столкновения свойств товара с требованиями или ограничениями '{target_context}'.
+  Каждый найденный атрибут должен быть логическим следствием столкновения свойств товара с требованиями или ограничениями '{target_use_case}'.

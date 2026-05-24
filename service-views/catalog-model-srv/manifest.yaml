@@ -4,6 +4,35 @@ operations:
   - operation_id: "infer_category"
     compiled_spec: "specs/infer_category.yaml"
     dcl_instruction: "Determines the product category based on raw text description."
+
   - operation_id: "infer_attribute_schema"
     compiled_spec: "specs/infer_attribute_schema.yaml"
     dcl_instruction: "Generates an attribute schema for a given category path."
+
+  - operation_id: "reconstruct_market_fingerprint"
+    compiled_spec: "specs/reconstruct_market_fingerprint.yaml"
+    dcl_instruction: |
+      RECONSTRUCT Entity('Market_Fingerprint')
+      FROM Entity('Draft_Record')
+
+  - operation_id: "define_attribute_schema"
+    compiled_spec: "specs/define_attribute_schema.yaml"
+    dcl_instruction: |
+    
+      DEFINE Entity('Attribute_Schema')
+      FROM Entity('Market_Context_Fingerprint')
+      USING AXES_MODEL
+    
+  - operation_id: "enrich_geo_attributes"
+    compiled_spec: "specs/enrich_geo_attributes.yaml"
+    dcl_instruction: |
+      ENRICH Entity('Attribute_Schema')
+      FROM Entity('Attribute_Schema')
+      USING LENS_GEO(target_region='Bulgaria'), AXES_MODEL
+
+  - operation_id: "enrich_use_cases_attributes"
+    compiled_spec: "specs/enrich_use_cases_attributes.yaml"
+    dcl_instruction: |
+      ENRICH Entity('Attribute_Schema')
+      FROM Entity('Attribute_Schema')
+      USING LENS_SCENARIO, AXES_MODEL

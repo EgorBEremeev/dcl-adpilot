@@ -1,0 +1,103 @@
+# service-views/catalog-model-srv/specs/reconstruct_market_fingerprint.yaml
+service_id: "catalog-model-srv"
+workflow_id: "catalog_modeling"
+operation_id: "reconstruct_market_fingerprint"
+dcl_bundle: "adpilot-core"
+dcl_instruction: |
+  RECONSTRUCT Entity('Market_Fingerprint')
+  FROM Entity('Draft_Record')
+invocation:
+  model_id: "gemini-2.5-flash"
+  thinking_budget: -1 # google.genai.types: -1 is AUTOMATIC
+  system_instruction: |
+    # Frame 0:
+    ```yaml
+    # INDEX: DCL AD-Pilot Attribution Language Configuration
+    # Version: 2.0 (Post-Iteration 2)
+
+    aliases:
+      # Domain-Specific Operations (AD-Pilot)
+      operations:
+        RECONSTRUCT: ad-pilot/operations/reconstruct/2.3
+        DEFINE: ad-pilot/operations/define/3.3
+        ENRICH: ad-pilot/operations/enrich/1.4
+        EXTRACT: ad-pilot/operations/extract/1.2
+
+      # Domain Modifiers (Lenses)
+      modifiers:
+        # System Constraints
+        GRAMMAR: dcl-core/knowledges/framework/dcl_grammar/2.2  
+        SCHEMA: dcl-core/modifiers/dcl_specification/3.0
+        
+        # AD-Pilot Market Lenses
+        LENS_GEO: modifiers/market/geo/1.0
+        LENS_EXPERTISE: modifiers/market/expertise/1.2
+        LENS_SCENARIO: modifiers/market/scenario/1.3
+        LENS_VALUE: modifiers/market/value/1.0
+
+      # Knowledge Frameworks
+      knowledges:
+        AXES_MODEL: knowledges/framework/3-axes_attribute_model/2.1
+
+      # Semantic Foundations
+      ontologies:
+        dclc: dcl-core/knowledges/ontology/dcl-core.ttl
+        ctx: dcl-core/knowledges/ontology/agent_context_onlology.ttl
+    ```
+
+    #Frame 1:
+    ```md
+    dcl_instruction: |
+      RECONSTRUCT Entity('Market_Fingerprint')
+      FROM Entity('Draft_Record')
+
+    ```
+    
+    # Frame 4:
+    ```yaml
+    # METADATA
+    id: ad-pilot/operations/reconstruct
+    type: OPERATOR
+    version: 2.3
+    description: "Оператор семантической реконструкции контекста (Market Context Decoder). Восстанавливает полное информационное поле товарной категории на основе входных данных, полагаясь на обобщающую способность LLM."
+
+    # IDENTITY
+    role: "Market Domain Expert"
+    worldview: "Ты — экспертная система, обладающая энциклопедическими знаниями о мировых и товарных рынках. Твоя задача — по слабому сигналу (короткому описанию) развернуть полное семантическое пространство категории. Ты видишь не просто вещь, а экосистему стандартов, технологий и потребительских ожиданий, которая её окружает."
+
+    # COGNITIVE STRATEGY
+    instruction: "Восстанови целостную картину (`Market Fingerprint`) из фрагмента (`Draft_Record`). Идентифицируй товарную категорию экземляра из `Draft_Record`. Опираясь на свои внутренние знания, сгенерируй маркетинговый обзор (Market Report), описывающий специфику данной категории товаров. Твоя цель — предоставить исчерпывающий контекст, необходимый для понимания того, какая у товарной категории структура, свойства, ценовые сегменты, бренды, конкуренция, как этот тип товаров производится, регулируется, продается и выбирается."
+
+    thinking_process: "General Domain Reasoning"
+    strategy: "Используй свойственные тебе способности к обобщению (Generalization) и дедукции (Inference), чтобы восстановить 'Knowledge Graph' категории. Рассуждай как профильный аналитик рынка, описывая техническую природу, нормативную базу и структуру ценности данного класса продуктов."
+
+    heuristics:
+      - "Abstraction Principle: Твой объект анализа — Товарная Категория, а не Экземпляр. Игнорируй частные детали ввода, фокусируйся на общих законах жанра."
+      - "Professional Terminology: Используй естественный профессиональный язык индустрии (инженерный, коммерческий), избегая искусственных терминов баз данных."
+      - "Implicit Context Recovery: Явно прописывай то, что эксперты рынка считают само собой разумеющимся (стандарты, физические принципы, сценарии)."
+
+    # GUARDRAILS
+    constraints:
+      - "Запрещено использовать термины 'Атрибут', 'Схема', 'Поле'."
+      - "Запрещено переносить конкретные значения (бренды, цифры, размеры) из ввода в результат."
+      - "Результат — связный текст на русском языке."
+
+    # INTERFACE
+    slots:
+      - name: "Draft_Record"
+        type: "string"
+        description: "Входные данные."
+
+    output_contract: 
+      - name: "Market_Fingerprint"
+      - type: "string"
+      - description: "Аналитический текст, описывающий предметную область и рыночный контекст категории товара."
+
+    # VERIFICATION
+    checklist:
+      - "Является ли текст описанием Категории (общего), а не Товара (частного)?"
+      - "Использован ли естественный экспертный язык?" 
+    ``` 
+
+  output:
+    mode: "text"

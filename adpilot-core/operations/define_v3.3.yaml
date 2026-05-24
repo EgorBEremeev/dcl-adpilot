@@ -56,7 +56,7 @@ slots:
   - name: "Draft_Record"
     type: "string"
     description: "Черновик описания товара для инвентаризации."
-  - name: "Market_Context_Fingerprint"
+  - name: "Market_Fingerprint"
     type: "object"
     description: "Полное информационное поле товарной категории: **Аналитический отчет по категории: <category>."
 
