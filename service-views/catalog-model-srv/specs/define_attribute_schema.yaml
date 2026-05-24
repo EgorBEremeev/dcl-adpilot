@@ -221,42 +221,17 @@ invocation:
           *   `оставшийся_срок_гарантии`.
           *   `пятна_на_страницах: boolean`.
     ```
-  # LEGACY: array-формат. Требует трансформации array→dict на стороне backend.
-  # Заменён на properties-dict через additionalProperties (Gemini Structured Output поддерживает официально).
-  # Оставлен для отката если additionalProperties не сработает.
-  #  output:
-  #    mode: "static_structured"
-  #    response_schema:
-  #      type: "object"
-  #      properties:
-  #        attributes:
-  #          type: "array"
-  #          items:
-  #            type: "object"
-  #            properties:
-  #              name: { type: "string" }
-  #              type: { type: "string", enum: ["object", "string", "number", "boolean"] }
-  #              description: { type: "string" }
-  #              x-dcl-meta:
-  #                type: "object"
-  #                properties:
-  #                  criticality: { type: "string", enum: ["L1.1_Constitutional", "L1.2_Qualifier", "L1.3_Contextual"] }
-  #                  objectivity: { type: "string", enum: ["L2.1_Factual", "L2.2_Subjective"] }
-  #                  origin: { type: "string", enum: ["L3.1_Inherent", "L3.2_Derived"] }
-  #                required: ["criticality", "objectivity", "origin"]
-  #            required: ["name", "type", "description", "x-dcl-meta"]
-  #      required: ["attributes"]
-
   output:
     mode: "static_structured"
     response_schema:
       type: "object"
       properties:
-        properties:
-          type: "object"
-          additionalProperties:
+        attributes:
+          type: "array"
+          items:
             type: "object"
             properties:
+              name: { type: "string" }
               type: { type: "string", enum: ["object", "string", "number", "boolean"] }
               description: { type: "string" }
               x-dcl-meta:
@@ -266,8 +241,5 @@ invocation:
                   objectivity: { type: "string", enum: ["L2.1_Factual", "L2.2_Subjective"] }
                   origin: { type: "string", enum: ["L3.1_Inherent", "L3.2_Derived"] }
                 required: ["criticality", "objectivity", "origin"]
-                propertyOrdering: ["criticality", "objectivity", "origin"]
-            required: ["type", "description", "x-dcl-meta"]
-            propertyOrdering: ["type", "description", "x-dcl-meta"]
-      required: ["properties"]
-      propertyOrdering: ["properties"]
+            required: ["name", "type", "description", "x-dcl-meta"]
+      required: ["attributes"]
