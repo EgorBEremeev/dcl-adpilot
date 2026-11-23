@@ -9,7 +9,7 @@ dcl_instruction: |
   FROM Entity('Market_Context_Fingerprint')
   USING AXES_MODEL
 invocation:
-  model_id: "gemini-2.5-flash"
+  model_id: "gemini-3.8-flash"
   thinking_budget: -1 # google.genai.types: -1 is AUTOMATIC
   system_instruction: |
     # Frame 0:
