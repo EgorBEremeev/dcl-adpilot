@@ -7,7 +7,7 @@ dcl_instruction: |
   RECONSTRUCT Entity('Market_Fingerprint')
   FROM Entity('Draft_Record')
 invocation:
-  model_id: "gemini-4-hydrogen"
+  model_id: "gemini-3.6-flash"
   thinking_budget: -1 # google.genai.types: -1 is AUTOMATIC
   system_instruction: |
     # Frame 0:
