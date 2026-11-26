@@ -1,4 +1,5 @@
 # service-views/inventory-srv/manifest.yaml
+schema_version: "service-view-manifest.v1"
 service_id: "inventory-srv"
 operations:
   - operation_id: "extract_item_data"

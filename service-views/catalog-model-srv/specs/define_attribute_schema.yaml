@@ -1,4 +1,5 @@
 # service-views/catalog-model-srv/specs/define_attribute_schema.yaml
+schema_version: "llm-invocation-spec.v2"
 service_id: "catalog-model-srv"
 workflow_id: "catalog_modeling"
 operation_id: "define_attribute_schema"
@@ -9,8 +10,14 @@ dcl_instruction: |
   FROM Entity('Market_Context_Fingerprint')
   USING AXES_MODEL
 invocation:
-  model_id: "gemini-3.8-flash"
-  thinking_budget: -1 # google.genai.types: -1 is AUTOMATIC
+  model_id: "gemini-4-hydrogen"
+  thinking_level: "medium"
+  store: false
+  fallback_models:
+    - model_id: "gemini-3.6-flash"
+      thinking_level: "medium"
+    - model_id: "gemini-3.8-flash"
+      thinking_level: "medium"
   system_instruction: |
     # Frame 0:
     ```yaml
@@ -221,25 +228,60 @@ invocation:
           *   `оставшийся_срок_гарантии`.
           *   `пятна_на_страницах: boolean`.
     ```
+  input_placeholders:
+    - catalog_name
+    - market_fingerprint
   output:
     mode: "static_structured"
+    schema_format: "json_schema.v1"
     response_schema:
       type: "object"
+      $defs:
+        DclMeta:
+          type: "object"
+          properties:
+            criticality:
+              type: "string"
+              enum: ["L1.1_Constitutional", "L1.2_Qualifier", "L1.3_Contextual"]
+            objectivity:
+              type: "string"
+              enum: ["L2.1_Factual", "L2.2_Subjective"]
+            origin:
+              type: "string"
+              enum: ["L3.1_Inherent", "L3.2_Derived"]
+          required: ["criticality", "objectivity", "origin"]
+          additionalProperties: false
+        AttributeDef:
+          type: "object"
+          properties:
+            name: { type: "string" }
+            type:
+              type: "string"
+              enum: ["string", "number", "integer", "boolean", "object", "array"]
+            description: { type: "string" }
+            enum:
+              anyOf:
+                - type: "array"
+                  items: { type: "string" }
+                - type: "null"
+              description: "Allowed scalar values if categorical enum, otherwise null."
+            items_type:
+              type: ["string", "null"]
+              enum: ["string", "number", "integer", "boolean", "object", null]
+              description: "Element type when type is 'array', otherwise null."
+            properties:
+              anyOf:
+                - type: "array"
+                  items: { $ref: "#/$defs/AttributeDef" }
+                - type: "null"
+              description: "Child attributes when type is 'object' (or 'array' with items_type='object'), otherwise null."
+            x-dcl-meta:
+              $ref: "#/$defs/DclMeta"
+          required: ["name", "type", "description", "enum", "items_type", "properties", "x-dcl-meta"]
+          additionalProperties: false
       properties:
         attributes:
           type: "array"
-          items:
-            type: "object"
-            properties:
-              name: { type: "string" }
-              type: { type: "string", enum: ["object", "string", "number", "boolean"] }
-              description: { type: "string" }
-              x-dcl-meta:
-                type: "object"
-                properties:
-                  criticality: { type: "string", enum: ["L1.1_Constitutional", "L1.2_Qualifier", "L1.3_Contextual"] }
-                  objectivity: { type: "string", enum: ["L2.1_Factual", "L2.2_Subjective"] }
-                  origin: { type: "string", enum: ["L3.1_Inherent", "L3.2_Derived"] }
-                required: ["criticality", "objectivity", "origin"]
-            required: ["name", "type", "description", "x-dcl-meta"]
+          items: { $ref: "#/$defs/AttributeDef" }
       required: ["attributes"]
+      additionalProperties: false

@@ -1,4 +1,5 @@
 # service-views/catalog-model-srv/specs/reconstruct_market_fingerprint.yaml
+schema_version: "llm-invocation-spec.v2"
 service_id: "catalog-model-srv"
 workflow_id: "catalog_modeling"
 operation_id: "reconstruct_market_fingerprint"
@@ -7,8 +8,14 @@ dcl_instruction: |
   RECONSTRUCT Entity('Market_Fingerprint')
   FROM Entity('Draft_Record')
 invocation:
-  model_id: "gemini-3.6-flash"
-  thinking_budget: -1 # google.genai.types: -1 is AUTOMATIC
+  model_id: "gemini-4-hydrogen"
+  thinking_level: "low"
+  store: false
+  fallback_models:
+    - model_id: "gemini-3.6-flash"
+      thinking_level: "low"
+    - model_id: "gemini-3.5-flash-lite"
+      thinking_level: "low"
   system_instruction: |
     # Frame 0:
     ```yaml
@@ -99,5 +106,8 @@ invocation:
       - "Использован ли естественный экспертный язык?" 
     ``` 
 
+  input_placeholders:
+    - source_text
+    - catalog_name
   output:
     mode: "text"

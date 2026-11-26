@@ -1,12 +1,19 @@
 # service-views/catalog-model-srv/specs/infer_category.yaml
+schema_version: "llm-invocation-spec.v2"
 service_id: "catalog-model-srv"
 workflow_id: "catalog_modeling"
 operation_id: "infer_category"
 dcl_bundle: "adpilot-core"
 dcl_instruction: "Determines the product category based on raw text description."
 invocation:
-  model_id: "gemini-2.5-flash-lite"
-  thinking_budget: 0
+  model_id: "gemini-3.5-flash-lite"
+  thinking_level: "minimal"
+  store: false
+  fallback_models:
+    - model_id: "gemini-3.6-flash"
+      thinking_level: "minimal"
+    - model_id: "gemini-4-hydrogen"
+      thinking_level: "low"
   system_instruction: |
     Ты — эксперт по классификации товаров. Твоя задача — определить наиболее подходящую категорию для товара на основе его текстового описания.
     
@@ -19,8 +26,12 @@ invocation:
     2. Найди в <catalog_state> наиболее подходящую категорию.
     3. Верни JSON, строго соответствующий схеме. Поле "candidates", должно содержать список объектов с "category_id", "confidence" (0-1) и "reasoning", .
     4. Если подходящей категории нет, верни пустой список candidates.
+  input_placeholders:
+    - source_text
+    - catalog_state
   output:
     mode: "static_structured"
+    schema_format: "json_schema.v1"
     response_schema:
       type: "object"
       properties:
@@ -33,4 +44,6 @@ invocation:
               confidence: { type: "number" }
               reasoning: { type: "string" }
             required: ["category_id", "confidence", "reasoning"]
+            additionalProperties: false
       required: ["candidates"]
+      additionalProperties: false

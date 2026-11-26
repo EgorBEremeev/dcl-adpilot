@@ -1,4 +1,4 @@
-schema_version: llm-invocation-spec.v1
+schema_version: llm-invocation-spec.v2
 service_id: inventory-srv
 workflow_id: inventory_management
 operation_id: extract_item_data
@@ -7,8 +7,14 @@ dcl_instruction: |
   EXTRACT Entity('Attribute_Schema')
   FROM Entity('Draft_Record')
 invocation:
-  model_id: gemini-2.5-flash-lite
-  thinking_budget: 0
+  model_id: gemini-3.5-flash-lite
+  thinking_level: minimal
+  store: false
+  fallback_models:
+    - model_id: gemini-3.6-flash
+      thinking_level: minimal
+    - model_id: gemini-4-hydrogen
+      thinking_level: low
   system_instruction: |
     # Frame 1:
     ```md
@@ -101,4 +107,4 @@ invocation:
     - source_text
   output:
     mode: dynamic_structured
-    schema_format: gemini_openapi_dict.v1
+    schema_format: json_schema.v1
