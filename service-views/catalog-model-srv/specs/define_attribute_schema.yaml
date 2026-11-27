@@ -340,7 +340,27 @@ invocation:
               enum: ["L3.1_Inherent", "L3.2_Derived"]
           required: ["criticality", "objectivity", "origin"]
           additionalProperties: false
-        AttributeDef:
+        AttributeDefL3:
+          type: "object"
+          properties:
+            name: { type: "string" }
+            type:
+              type: "string"
+              enum: ["string", "number", "integer", "boolean", "array"]
+            description: { type: "string" }
+            enum:
+              type: ["array", "null"]
+              items: { type: "string" }
+              description: "Allowed scalar values if categorical enum, otherwise null."
+            items_type:
+              type: ["string", "null"]
+              enum: ["string", "number", "integer", "boolean", null]
+              description: "Element type when type is 'array', otherwise null."
+            x-dcl-meta:
+              $ref: "#/$defs/DclMeta"
+          required: ["name", "type", "description", "enum", "items_type", "x-dcl-meta"]
+          additionalProperties: false
+        AttributeDefL2:
           type: "object"
           properties:
             name: { type: "string" }
@@ -349,21 +369,41 @@ invocation:
               enum: ["string", "number", "integer", "boolean", "object", "array"]
             description: { type: "string" }
             enum:
-              anyOf:
-                - type: "array"
-                  items: { type: "string" }
-                - type: "null"
+              type: ["array", "null"]
+              items: { type: "string" }
               description: "Allowed scalar values if categorical enum, otherwise null."
             items_type:
               type: ["string", "null"]
               enum: ["string", "number", "integer", "boolean", "object", null]
               description: "Element type when type is 'array', otherwise null."
             properties:
-              anyOf:
-                - type: "array"
-                  items: { $ref: "#/$defs/AttributeDef" }
-                - type: "null"
-              description: "Child attributes when type is 'object' (or 'array' with items_type='object'), otherwise null."
+              type: ["array", "null"]
+              items: { $ref: "#/$defs/AttributeDefL3" }
+              description: "Child attributes (level 3 leaves) when type is 'object' (or 'array' with items_type='object'), otherwise null."
+            x-dcl-meta:
+              $ref: "#/$defs/DclMeta"
+          required: ["name", "type", "description", "enum", "items_type", "properties", "x-dcl-meta"]
+          additionalProperties: false
+        AttributeDefL1:
+          type: "object"
+          properties:
+            name: { type: "string" }
+            type:
+              type: "string"
+              enum: ["string", "number", "integer", "boolean", "object", "array"]
+            description: { type: "string" }
+            enum:
+              type: ["array", "null"]
+              items: { type: "string" }
+              description: "Allowed scalar values if categorical enum, otherwise null."
+            items_type:
+              type: ["string", "null"]
+              enum: ["string", "number", "integer", "boolean", "object", null]
+              description: "Element type when type is 'array', otherwise null."
+            properties:
+              type: ["array", "null"]
+              items: { $ref: "#/$defs/AttributeDefL2" }
+              description: "Child attributes (level 2) when type is 'object' (or 'array' with items_type='object'), otherwise null."
             x-dcl-meta:
               $ref: "#/$defs/DclMeta"
           required: ["name", "type", "description", "enum", "items_type", "properties", "x-dcl-meta"]
@@ -371,6 +411,7 @@ invocation:
       properties:
         attributes:
           type: "array"
-          items: { $ref: "#/$defs/AttributeDef" }
+          minItems: 1
+          items: { $ref: "#/$defs/AttributeDefL1" }
       required: ["attributes"]
       additionalProperties: false
