@@ -10,7 +10,8 @@ dcl_instruction: |
   FROM Entity('Market_Context_Fingerprint')
   USING AXES_MODEL
 invocation:
-  model_id: "gemini-4-hydrogen"
+  model_id: "gemini-3.6-flash"
+  # model_id: "gemini-4-hydrogen"
   thinking_level: "medium"
   store: false
   fallback_models:
