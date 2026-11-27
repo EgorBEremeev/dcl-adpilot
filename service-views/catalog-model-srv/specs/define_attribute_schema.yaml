@@ -33,8 +33,8 @@ invocation:
     # METADATA
     id: ad-pilot/operations/define
     type: OPERATOR
-    version: 4.2
-    description: "Оператор создания 'Канонического ядра схемы атрибутов товара' (Canonical Core). Версия 4.2 адаптирует v4.0/v4.1 под Interactions API (static_structured json_schema.v1 / AttributeDef): убраны конфликтующие с response_format XML-секции и Python TypedDict в выводе, сохранён внутренний кросс-форматный аудит в thinking, добавлены правила иерархического моделирования до 3 уровней вложенности (object, array, составные измерения {value, unit}) и обязательный x-dcl-meta на каждом узле."
+    version: 4.3
+    description: "Оператор создания 'Канонического ядра схемы атрибутов товара' (Canonical Core). Версия 4.3 вводит первоклассное поле `unit_enum` на узле `AttributeDef` для измеримых числовых характеристик (runtime автоматически разворачивает их в каноническую структуру `{value, unit}`), отделяя семантическую иерархию до 3 уровней от представления единиц измерения."
 
     # IDENTITY
     role: "PIM Domain Architect"
@@ -60,18 +60,19 @@ invocation:
 
       # --- СТРУКТУРНОЕ МОДЕЛИРОВАНИЕ И ИЕРАРХИЯ (`json_schema.v1` / `AttributeDef`) ---
 
-      5. "Structural Modeling & Hierarchy Formalization: Опиши отобранные атрибуты в контракте `attributes[]` (`AttributeDef`) с глубиной вложенности **до 3 уровней** (корень атрибутов = уровень 1):
-          - Скаляры (`string`, `integer`, `number`, `boolean`): для атомарных характеристик. Закрытые отраслевые словари (материал, тип крепления, стандарт, единица измерения) оформляй через `enum` (только для `type: "string"`).
-          - Вложенные объекты (`type: "object"`, `properties: [...]`): группируй тесно связанные физические/технические характеристики в логические блоки вместо плоского набора однородных полей (`dimensions`, `specs`, `power`). Составные величины, у которых единица измерения может меняться (объём накопителя, вес, объём двигателя), моделируй как структуру `{value, unit}` (где `unit` — `enum`) вплоть до 3-го уровня (`specs` → `storage` → `{value, unit}`), не склеивая единицы в имя ключа.
+      5. "Structural Modeling & Hierarchy Formalization: Опиши отобранные атрибуты в контракте `attributes[]` с семантической глубиной **до 3 уровней** (корень атрибутов = уровень 1, уровень 3 = только скалярные или списочные листья без вложенных `properties`):
+          - Скаляры (`string`, `integer`, `number`, `boolean`): для атомарных характеристик. Закрытые отраслевые словари значений (материал, тип крепления, стандарт) оформляй через `enum` (только для `type: "string"`).
+          - Первоклассные единицы измерения (`unit_enum`): для КАЖДОЙ измеримой физической или технической величины (`type: "number"` или `"integer"` — высота, ширина, глубина, толщина, диаметр, вес, объём, ёмкость, мощность, напряжение, частота и т.п.) задавай список допустимых единиц в поле `unit_enum` (например `["cm", "mm"]`, `["GB", "TB"]`, `["kg", "g"]`). НЕ создавай вручную вложенный объект `{value, unit}` и НЕ прописывай единицу в `description` («в см», «в кг») или в суффиксе ключа (`_cm`, `_gb`) — runtime автоматически развернёт скаляр с `unit_enum` в структуру `{value, unit}`. Для безразмерных чисел (количество, год, индекс) и нечисловых типов задавай `unit_enum: null`.
+          - Смысловая группировка (`type: "object"`, `properties: [...]`): группируй однородные характеристики в логические блоки (`dimensions`, `specs`, `materials`, `construction`), предпочитая плоскую 2-уровневую структуру (`dimensions.{seat_height, seat_width, seat_depth}`) вместо лишних промежуточных подконтейнеров (`dimensions.seat_size.{width, depth}`). 3-й уровень используй только тогда, когда подгруппа физически необходима.
           - Списки (`type: "array"`): задавай `items_type` (`string`, `integer`, `number`, `boolean` или `object`); при `items_type: "object"` раскрой дочерние поля в `properties`.
           - Запрет пустых обёрток: не создавай `object`-контейнер из одного дочернего поля и не делай уровень 4+.
-          - Мета-разметка: КАЖДЫЙ узел `AttributeDef` (как контейнерный `object`/`array`, так и листовой скаляр) обязан содержать блок `x-dcl-meta` с тремя осями (`criticality`, `objectivity`, `origin`). Неиспользуемые поля узла (`enum`, `items_type`, `properties`) заполняй значением `null`."
+          - Мета-разметка: КАЖДЫЙ узел `AttributeDef` (как контейнерный `object`/`array`, так и листовой скаляр) обязан содержать блок `x-dcl-meta` с тремя осями (`criticality`, `objectivity`, `origin`). Неиспользуемые поля узла (`enum`, `items_type`, `unit_enum`, `properties`) заполняй значением `null`."
 
       # --- ВНУТРЕННИЙ АУДИТ (в reasoning/thinking, без вывода служебных тегов) ---
 
       6. "Internal Structural & Semantic Audit: Не выводя дополнительных XML-секций в ответ (вывод жёстко задан `response_format`), мысленно проведи двойную самопроверку и исправь схему до финализации:
           - Example as Structural Probe: мысленно подставь 1–2 реальных экземпляра товара (полное и неполное объявление). Каждый лист должен однозначно заполняться фактом из текста либо честно уходить в `null` при `EXTRACT`. Размытые и дублирующие поля удали.
-          - Type, Unit & Enum Audit: проверь, не спрятан ли закрытый словарь в голом `string` без `enum`; не дублируются ли единицы измерения в именах полей там, где нужен `{value, unit}`; глубина дерева не превышает 3 уровней; нет однопольных обёрток; `items_type` и `properties` согласованы для всех `array`/`object` узлов."
+          - Dimensional, Unit & Enum Audit: проверь КАЖДОЕ поле с `type: 'number'` или `'integer'` — является ли оно физической величиной? Если да, у него ОБЯЗАН быть непустой `unit_enum`, а не приписка «в см» в `description` и не ручной объект `{value, unit}`; если безразмерный счётчик/год — `unit_enum: null`. Проверь, не спрятан ли закрытый словарь в голом `string` без `enum`, нет ли лишних промежуточных контейнеров и однопольных `object`-обёрток."
 
     heuristics: |
       - "The Intersection Rule: Идеальный атрибут ядра схемы находится строго на пересечении трех осей: [L1.1 Constitutional] (без него нет товара для сделки) + [L2.1 Factual] (измеримый факт) + [L3.1 Inherent] (свойство с завода)."
@@ -80,25 +81,26 @@ invocation:
           - В Feature-Driven рынках (одежда, игрушки): Идентификаторы (SKU, MPN) — это L1.3 (Contextual). Конституцию (L1.1) формируют физические свойства (размер, материал).
           - В Reference-Driven рынках (автозапчасти, чипы): Идентификаторы — это L1.1 (Constitutional). Без точного номера товар теряет свою суть."
       - "Transaction Prerequisite: Представь двух незнакомцев. Один продает, другой покупает. Атрибуты Ядра — это тот минимум слов, который они должны произнести, чтобы ударить по рукам. Всё остальное — маркетинг (ENRICH)."
-      - "Meaningful Nesting (<= 3 Levels): Иерархия должна отражать физическую структуру товара, а не искусственную таксономию ради вложенности. Предпочитай 1–2 уровня и используй 3-й уровень для составных узлов (`specs.storage.{value, unit}`, `dimensions.seat.{width, depth}`). Контейнеры из 1 поля запрещены."
-      - "Structured Measurements ({value, unit}): Для числовых величин с вариативными единицами измерения используй пару `{value: number|integer, unit: string(enum)}` внутри родительского объекта вместо суффиксов `_gb`/`_tb` в именах ключей."
+      - "Meaningful Nesting (<= 3 Semantic Levels): Иерархия должна отражать физическую структуру товара без лишних прослоек. Предпочитай 2 уровня (`dimensions.{seat_height, seat_width, seat_depth}` вместо `dimensions.seat_size.{width, depth}`), поскольку единицы измерения вынесены в `unit_enum`. Однопольные `object`-контейнеры запрещены."
+      - "First-Class Measurements (`unit_enum`): Для каждой физической/измеримой числовой величины задавай `type: 'number'|'integer'` + непустой `unit_enum` (например `['cm', 'mm']`, `['GB', 'TB']`). Запрещено зашивать единицу измерения в имя ключа (`_cm`, `_gb`), в текст `description` ('Ширина в см') или руками плодить пару `{value, unit}` в `DEFINE`. Безразмерные числа (`legs_count`, `year`) обязаны иметь `unit_enum: null`."
       - "Example as Structural Probe & Enum Discipline: Если атрибут нельзя однозначно заполнить фактом при EXTRACT — он сформулирован плохо или лишний; если допустимых значений конечное множество — фиксируй `enum`."
 
     # KNOWLEDGE
     reference_model: "Трехосевая Модель Атрибутов (3-Axes Attributes Framework)"
     examples:
       - context: "Автомобильная фара (Aftermarket)"
-        reasoning: "Покупателю критична точная применимость и тип оптики. Цвет пластика — декорация. Конституция — OEM-артикул, сторона установки (enum), совместимые кузова (array) и тип источника света."
+        reasoning: "Покупателю критична точная применимость, сторона и светотехника. Цвет пластика — декорация. Конституция — OEM-артикул, сторона установки (enum), совместимые кузова (array) и тип оптики (enum)."
         selected_attributes:
           - "oem_number (string)"
           - "mounting_side (string, enum: [left, right])"
           - "optics_type (string, enum: [halogen, xenon, led, matrix_led])"
           - "compatible_chassis (array of string)"
         axis_logic: "L1.1 (Go/No-Go) + L2.1 (Fact) + L3.1 (Inherent)"
-      - context: "Игровая консоль / серверный узел (иерархия до 3 уровней)"
-        reasoning: "Технические спецификации группируются в `specs` (уровень 1), объём накопителя моделируется составным узлом `storage` (уровень 2) с `value` и `unit` (уровень 3), наличие привода — `disk_drive` (уровень 2)."
+      - context: "Игровая консоль / серверный узел (unit_enum и 2 уровня вместо ручного value/unit)"
+        reasoning: "Технические спецификации группируются в `specs` (уровень 1); объём накопителя `storage_capacity` (уровень 2) объявляется как `integer` с `unit_enum: ['GB', 'TB']` (runtime развернёт в `{value, unit}`), безразмерное количество портов `usb_ports_count` — `integer` с `unit_enum: null`, наличие привода — `boolean`."
         selected_attributes:
-          - "specs (object) -> storage (object) -> { value (integer), unit (string, enum: [GB, TB]) }"
+          - "specs (object) -> storage_capacity (integer, unit_enum: [GB, TB])"
+          - "specs (object) -> usb_ports_count (integer, unit_enum: null)"
           - "specs (object) -> disk_drive (boolean)"
         axis_logic: "L1.1 (Go/No-Go) + L2.1 (Fact) + L3.1 (Inherent)"
 
@@ -108,8 +110,9 @@ invocation:
       - "Принцип 'Слепого Проектирования': проектируй схему строго по классу объекта и `market_fingerprint`, не опираясь на случайные детали конкретного объявления."
       - "Запрещено включать в схему данные о состоянии (L3.2) и субъективные оценки (L2.2)."
       - "Структурированный вывод управляется `response_format` (`json_schema.v1`): выводи ТОЛЬКО чистый JSON по контракту `{'attributes': [...]}` без XML-тегов (<schema>, <example>, <self_check>, <schema_typed>)."
-      - "Каждый узел `AttributeDef` (и контейнерный `object`/`array`, и листовой скаляр) обязан содержать валидный блок `x-dcl-meta` с тремя осями; неиспользуемые поля `enum`, `items_type`, `properties` должны быть `null`."
-      - "Максимальная глубина вложенности — 3 уровня (уровень 1 = элемент `attributes[]`); запрещены `object`-обёртки с 1 дочерним свойством."
+      - "Каждый узел обязан содержать валидный блок `x-dcl-meta` с тремя осями; неиспользуемые поля `enum`, `items_type`, `unit_enum`, `properties` (на уровнях 1–2) должны быть `null`."
+      - "Любое измеримое числовое поле (`number`/`integer`) обязано иметь непустой `unit_enum` и НЕ должно вручную оборачиваться в `{value, unit}` или содержать единицу измерения в имени ключа / `description`; безразмерные числа обязаны иметь `unit_enum: null`."
+      - "Максимальная глубина вложенности — 3 семантических уровня (уровень 1 = элемент `attributes[]`, уровень 3 — только листья без `properties`); запрещены `object`-обёртки с 1 дочерним свойством."
       - "`enum` допускается только для скалярного типа `string` (для `array` указывай `items_type`, а при `items_type='object'` — также `properties`)."
 
     # INTERFACE
@@ -122,7 +125,7 @@ invocation:
         description: "Полное информационное поле товарной категории: аналитический Markdown-отчёт по категории."
 
     output_contract: |
-      JSON-объект с корневым полем `attributes` (список `AttributeDef`, поддерживается до 3 уровней вложенности). Пример с `object` 3 уровней (`specs.storage.{value, unit}`), скаляром `enum` и `array`:
+      JSON-объект с корневым полем `attributes` (иерархия до 3 семантических уровней; измеримые `number`/`integer` оформляются через `unit_enum`, а runtime разворачивает их в `{value, unit}`). Пример:
       {
         "attributes": [
           {
@@ -131,41 +134,16 @@ invocation:
             "description": "Ключевые технические характеристики устройства.",
             "enum": null,
             "items_type": null,
+            "unit_enum": null,
             "properties": [
               {
-                "name": "storage",
-                "type": "object",
+                "name": "storage_capacity",
+                "type": "integer",
                 "description": "Ёмкость встроенного накопителя.",
                 "enum": null,
                 "items_type": null,
-                "properties": [
-                  {
-                    "name": "value",
-                    "type": "integer",
-                    "description": "Числовое значение объёма накопителя.",
-                    "enum": null,
-                    "items_type": null,
-                    "properties": null,
-                    "x-dcl-meta": {
-                      "criticality": "L1.1_Constitutional",
-                      "objectivity": "L2.1_Factual",
-                      "origin": "L3.1_Inherent"
-                    }
-                  },
-                  {
-                    "name": "unit",
-                    "type": "string",
-                    "description": "Единица измерения объёма накопителя.",
-                    "enum": ["GB", "TB"],
-                    "items_type": null,
-                    "properties": null,
-                    "x-dcl-meta": {
-                      "criticality": "L1.1_Constitutional",
-                      "objectivity": "L2.1_Factual",
-                      "origin": "L3.1_Inherent"
-                    }
-                  }
-                ],
+                "unit_enum": ["GB", "TB"],
+                "properties": null,
                 "x-dcl-meta": {
                   "criticality": "L1.1_Constitutional",
                   "objectivity": "L2.1_Factual",
@@ -178,6 +156,7 @@ invocation:
                 "description": "Наличие оптического привода.",
                 "enum": null,
                 "items_type": null,
+                "unit_enum": null,
                 "properties": null,
                 "x-dcl-meta": {
                   "criticality": "L1.1_Constitutional",
@@ -198,6 +177,7 @@ invocation:
             "description": "Региональный стандарт совместимости.",
             "enum": ["EU", "US", "JP", "Global"],
             "items_type": null,
+            "unit_enum": null,
             "properties": null,
             "x-dcl-meta": {
               "criticality": "L1.1_Constitutional",
@@ -211,6 +191,7 @@ invocation:
             "description": "Конституционные компоненты комплектации, определяющие базовый комплект поставки.",
             "enum": null,
             "items_type": "string",
+            "unit_enum": null,
             "properties": null,
             "x-dcl-meta": {
               "criticality": "L1.1_Constitutional",
@@ -223,11 +204,11 @@ invocation:
 
     # VERIFICATION
     checklist:
-      - "Содержат ли ВСЕ узлы `AttributeDef` (контейнеры и листья) блок `x-dcl-meta` с тремя осями?"
+      - "Содержат ли ВСЕ узлы (контейнеры и листья) блок `x-dcl-meta` с тремя осями?"
       - "Включены ли только конституционные атрибуты (строгое пересечение L1.1 + L2.1 + L3.1) без данных о состоянии (L3.2) и субъективных оценок (L2.2)?"
-      - "Не превышает ли глубина вложенности 3 уровней и отсутствуют ли `object`-обёртки из одного поля?"
-      - "Оформлены ли составные измерения через `{value, unit}` и закрытые словари через `enum` на скалярном `string`?"
-      - "Согласованы ли `type`, `items_type`, `properties` и `null` на неиспользуемых полях, и однозначно ли схема заполняется на этапе `EXTRACT` (с учётом Null Policy)?"
+      - "Для КАЖДОГО измеримого `number`/`integer` задан ли непустой `unit_enum` (и отсутствуют ли единицы измерения в `description` или суффиксах ключей, а также ручные обёртки `{value, unit}`)? И стоит ли `unit_enum: null` для безразмерных чисел?"
+      - "Не превышает ли глубина вложенности 3 семантических уровней и отсутствуют ли лишние подконтейнеры или `object`-обёртки из одного поля?"
+      - "Согласованы ли `type`, `enum`, `items_type`, `unit_enum`, `properties` и `null` на неиспользуемых полях, и однозначно ли схема заполняется на этапе `EXTRACT` (с учётом Null Policy)?"
     ```
 
     # Frame 3:
@@ -356,9 +337,13 @@ invocation:
               type: ["string", "null"]
               enum: ["string", "number", "integer", "boolean", null]
               description: "Element type when type is 'array', otherwise null."
+            unit_enum:
+              type: ["array", "null"]
+              items: { type: "string" }
+              description: "Allowed measurement units (e.g. ['cm', 'mm'], ['GB', 'TB']) for dimensional number/integer fields; null for dimensionless or non-numeric fields."
             x-dcl-meta:
               $ref: "#/$defs/DclMeta"
-          required: ["name", "type", "description", "enum", "items_type", "x-dcl-meta"]
+          required: ["name", "type", "description", "enum", "items_type", "unit_enum", "x-dcl-meta"]
           additionalProperties: false
         AttributeDefL2:
           type: "object"
@@ -376,13 +361,17 @@ invocation:
               type: ["string", "null"]
               enum: ["string", "number", "integer", "boolean", "object", null]
               description: "Element type when type is 'array', otherwise null."
+            unit_enum:
+              type: ["array", "null"]
+              items: { type: "string" }
+              description: "Allowed measurement units (e.g. ['cm', 'mm'], ['GB', 'TB']) for dimensional number/integer fields; null for dimensionless or non-numeric fields."
             properties:
               type: ["array", "null"]
               items: { $ref: "#/$defs/AttributeDefL3" }
               description: "Child attributes (level 3 leaves) when type is 'object' (or 'array' with items_type='object'), otherwise null."
             x-dcl-meta:
               $ref: "#/$defs/DclMeta"
-          required: ["name", "type", "description", "enum", "items_type", "properties", "x-dcl-meta"]
+          required: ["name", "type", "description", "enum", "items_type", "unit_enum", "properties", "x-dcl-meta"]
           additionalProperties: false
         AttributeDefL1:
           type: "object"
@@ -400,13 +389,17 @@ invocation:
               type: ["string", "null"]
               enum: ["string", "number", "integer", "boolean", "object", null]
               description: "Element type when type is 'array', otherwise null."
+            unit_enum:
+              type: ["array", "null"]
+              items: { type: "string" }
+              description: "Allowed measurement units (e.g. ['cm', 'mm'], ['GB', 'TB']) for dimensional number/integer fields; null for dimensionless or non-numeric fields."
             properties:
               type: ["array", "null"]
               items: { $ref: "#/$defs/AttributeDefL2" }
               description: "Child attributes (level 2) when type is 'object' (or 'array' with items_type='object'), otherwise null."
             x-dcl-meta:
               $ref: "#/$defs/DclMeta"
-          required: ["name", "type", "description", "enum", "items_type", "properties", "x-dcl-meta"]
+          required: ["name", "type", "description", "enum", "items_type", "unit_enum", "properties", "x-dcl-meta"]
           additionalProperties: false
       properties:
         attributes:
