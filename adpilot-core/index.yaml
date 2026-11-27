@@ -9,7 +9,7 @@ aliases:
   # Domain-Specific Operations (AD-Pilot)
   operations:
     RECONSTRUCT: ad-pilot/operations/reconstruct/2.3
-    DEFINE: ad-pilot/operations/define/3.3
+    DEFINE: ad-pilot/operations/define/4.2
     ENRICH: ad-pilot/operations/enrich/1.4
     EXTRACT: ad-pilot/operations/extract/1.3
 

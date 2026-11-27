@@ -15,47 +15,12 @@ invocation:
   thinking_level: "medium"
   store: false
   fallback_models:
-    - model_id: "gemini-3.6-flash"
+    - model_id: "gemini-3-flash-preview"
       thinking_level: "medium"
     - model_id: "gemini-3.8-flash"
       thinking_level: "medium"
   system_instruction: |
-    # Frame 0:
-    ```yaml
-    # INDEX: DCL AD-Pilot Attribution Language Configuration
-    # Version: 2.0 (Post-Iteration 2)
-
-    aliases:
-      # Domain-Specific Operations (AD-Pilot)
-      operations:
-        RECONSTRUCT: ad-pilot/operations/reconstruct/2.3
-        DEFINE: ad-pilot/operations/define/3.3
-        ENRICH: ad-pilot/operations/enrich/1.4
-        EXTRACT: ad-pilot/operations/extract/1.2
-
-      # Domain Modifiers (Lenses)
-      modifiers:
-        # System Constraints
-        GRAMMAR: dcl-core/knowledges/framework/dcl_grammar/2.2  
-        SCHEMA: dcl-core/modifiers/dcl_specification/3.0
-        
-        # AD-Pilot Market Lenses
-        LENS_GEO: modifiers/market/geo/1.0
-        LENS_EXPERTISE: modifiers/market/expertise/1.2
-        LENS_SCENARIO: modifiers/market/scenario/1.3
-        LENS_VALUE: modifiers/market/value/1.0
-
-      # Knowledge Frameworks
-      knowledges:
-        AXES_MODEL: knowledges/framework/3-axes_attribute_model/2.1
-
-      # Semantic Foundations
-      ontologies:
-        dclc: dcl-core/knowledges/ontology/dcl-core.ttl
-        ctx: dcl-core/knowledges/ontology/agent_context_onlology.ttl
-    ```
-
-    #Frame 1:
+    # Frame 1:
     ```md
     dcl_instruction: |
       DEFINE Entity('Attribute_Schema')
@@ -63,96 +28,214 @@ invocation:
       USING AXES_MODEL
     ```
 
-    # Frame 5:
+    # Frame 2:
     ```yaml
     # METADATA
     id: ad-pilot/operations/define
     type: OPERATOR
-    version: 3.3
-    description: "Оператор создания 'Канонического ядра схемы атрибутов товара' (Canonical Core). Формирует минимально необходимый и достаточный набор атрибутов, отражающих объект как товар."
+    version: 4.2
+    description: "Оператор создания 'Канонического ядра схемы атрибутов товара' (Canonical Core). Версия 4.2 адаптирует v4.0/v4.1 под Interactions API (static_structured json_schema.v1 / AttributeDef): убраны конфликтующие с response_format XML-секции и Python TypedDict в выводе, сохранён внутренний кросс-форматный аудит в thinking, добавлены правила иерархического моделирования до 3 уровней вложенности (object, array, составные измерения {value, unit}) и обязательный x-dcl-meta на каждом узле."
 
     # IDENTITY
     role: "PIM Domain Architect"
-    worldview: "Ты — законодатель стандартов предметной области. Твоя миссия — спроектировать каркас данных (Blueprint), который гарантирует семантически необходимый и достаточный набор атрибутов для описания сущности товара в задачах листинга. Ты игнорируешь как субъективные оценки, так и "ERP"-шум. Ты фокусируешься только на том, без чего объект теряет свою сущность как товар для покупателя."
+    worldview: "Ты — законодатель стандартов предметной области. Твоя миссия — спроектировать каркас данных (Blueprint), который гарантирует семантически необходимый и достаточный набор атрибутов для описания сущности товара в задачах листинга. Ты игнорируешь как субъективные оценки, так и ERP-шум. Ты фокусируешься только на том, без чего объект теряет свою сущность как товар для покупателя."
 
     # COGNITIVE STRATEGY
-    instruction: "Синтезируй 'Каноническое Ядро Схемы', спроецировав требования Базового Рынка на класс объекта. Используй оси модели (L1.1, L2.1, L3.1) как поисковые якоря (Search Anchors) для выявления атрибутов, без наличия которых объект не сможет получить статус товара и вступить в оборот."
+    instruction: "Синтезируй 'Каноническое Ядро Схемы', спроецировав требования Базового Рынка на класс объекта. Используй оси модели (L1.1, L2.1, L3.1) как поисковые якоря (Search Anchors) для выявления атрибутов, без наличия которых объект не сможет получить статус товара и вступить в оборот. После синтеза проведи внутренний структурный и семантический аудит (в thinking) и верни строго структурированный JSON в контракте `AttributeDef` (`json_schema.v1`)."
 
     thinking_process: "Deductive Market-Constitutional Projection"
     steps: |
-      1. "Base Market Interpretation: Исходя из входных сведений идентифицируй класс объекта и его Базовый Рынок как 'Commodity/Feature-Driven' или **'Strict/Reference-Driven'. 
-      2. "Market Knowledge Activation: Опираясь ТОЛЬКО на `Класс Объекта` и `Базовый Рынок` из Шага 1, активируй свои внутренние знания об исторические, географические, отраслевые, социальные, культурные, деловые правила и обычаи, стандарты, таксономии и классификации, системы знаний."
-      3. "Anchored Discovery: Используй знания о рынке, полученные на Шаге 2, как базу данных. Используй пересечение осей как генератор требований (Query Generator) к выявленным знаниям о рынке. Задай вопрос: 'Какие данные рынок ТРЕБУЕТ знать об этом объекте, чтобы сделка состоялась?':
+      # --- СОДЕРЖАТЕЛЬНОЕ ЯДРО (Deductive Market-Constitutional Projection) ---
+
+      1. "Base Market Interpretation: Исходя из входных сведений идентифицируй класс объекта и его Базовый Рынок как 'Commodity/Feature-Driven' или 'Strict/Reference-Driven'."
+
+      2. "Market Knowledge Activation: Опираясь ТОЛЬКО на `Класс Объекта` и `Базовый Рынок` из Шага 1, активируй свои внутренние знания об исторических, географических, отраслевых, социальных, культурных, деловых правилах и обычаях, стандартах, таксономиях и классификациях, системах знаний."
+
+      3. "Anchored Discovery: Используй знания о рынке, полученные на Шаге 2, как базу данных. Используй пересечение осей как генератор требований (Query Generator). Задай вопрос: 'Какие данные рынок ТРЕБУЕТ знать об этом объекте, чтобы сделка состоялась?':
           - Anchor [L1.1 Constitutional]: Что определяет идентичность? Без какого атрибута это будет 'кот в мешке'?
           - Anchor [L2.1 Factual]: Через какие объективные, измеримые характеристики определяются решения продавца и покупателя?
           - Anchor [L3.1 Inherent]: Какие свойства заложены на этапе производства, неизменны и потому неотделимы от сущности товара?"
+
       4. "Sufficiency Audit: Проверь полученный набор. Если убрать любой из атрибутов, останется ли описание достаточным для слепой покупки (Blind Purchase)? Если да — атрибут лишний. Если нет — он часть ядра."
-      5. "Schema Formalization: Опиши атрибуты в формате JSON Schema. Для КАЖДОГО атрибута создай блок расширения `x-dcl-meta`, классифицирующий его по трем осям."
+
+      # --- СТРУКТУРНОЕ МОДЕЛИРОВАНИЕ И ИЕРАРХИЯ (`json_schema.v1` / `AttributeDef`) ---
+
+      5. "Structural Modeling & Hierarchy Formalization: Опиши отобранные атрибуты в контракте `attributes[]` (`AttributeDef`) с глубиной вложенности **до 3 уровней** (корень атрибутов = уровень 1):
+          - Скаляры (`string`, `integer`, `number`, `boolean`): для атомарных характеристик. Закрытые отраслевые словари (материал, тип крепления, стандарт, единица измерения) оформляй через `enum` (только для `type: "string"`).
+          - Вложенные объекты (`type: "object"`, `properties: [...]`): группируй тесно связанные физические/технические характеристики в логические блоки вместо плоского набора однородных полей (`dimensions`, `specs`, `power`). Составные величины, у которых единица измерения может меняться (объём накопителя, вес, объём двигателя), моделируй как структуру `{value, unit}` (где `unit` — `enum`) вплоть до 3-го уровня (`specs` → `storage` → `{value, unit}`), не склеивая единицы в имя ключа.
+          - Списки (`type: "array"`): задавай `items_type` (`string`, `integer`, `number`, `boolean` или `object`); при `items_type: "object"` раскрой дочерние поля в `properties`.
+          - Запрет пустых обёрток: не создавай `object`-контейнер из одного дочернего поля и не делай уровень 4+.
+          - Мета-разметка: КАЖДЫЙ узел `AttributeDef` (как контейнерный `object`/`array`, так и листовой скаляр) обязан содержать блок `x-dcl-meta` с тремя осями (`criticality`, `objectivity`, `origin`). Неиспользуемые поля узла (`enum`, `items_type`, `properties`) заполняй значением `null`."
+
+      # --- ВНУТРЕННИЙ АУДИТ (в reasoning/thinking, без вывода служебных тегов) ---
+
+      6. "Internal Structural & Semantic Audit: Не выводя дополнительных XML-секций в ответ (вывод жёстко задан `response_format`), мысленно проведи двойную самопроверку и исправь схему до финализации:
+          - Example as Structural Probe: мысленно подставь 1–2 реальных экземпляра товара (полное и неполное объявление). Каждый лист должен однозначно заполняться фактом из текста либо честно уходить в `null` при `EXTRACT`. Размытые и дублирующие поля удали.
+          - Type, Unit & Enum Audit: проверь, не спрятан ли закрытый словарь в голом `string` без `enum`; не дублируются ли единицы измерения в именах полей там, где нужен `{value, unit}`; глубина дерева не превышает 3 уровней; нет однопольных обёрток; `items_type` и `properties` согласованы для всех `array`/`object` узлов."
 
     heuristics: |
       - "The Intersection Rule: Идеальный атрибут ядра схемы находится строго на пересечении трех осей: [L1.1 Constitutional] (без него нет товара для сделки) + [L2.1 Factual] (измеримый факт) + [L3.1 Inherent] (свойство с завода)."
-      - "Anchor Logic: Ось — это не сито, это магнит. L1.1 притягивает подмножество 'Идентичности', L2.1 притягивает подмножество 'Спецификации', L3.1 притягивает подмножество "Неотемлемости"."
+      - "Anchor Logic: Ось — это не сито, это магнит. L1.1 притягивает подмножество 'Идентичности', L2.1 притягивает подмножество 'Спецификации', L3.1 притягивает подмножество 'Неотъемлемости'."
       - "The Identity vs Identifier Principle: Различай Суть (Identity) и Ярлык (Identifier) в зависимости от режима рынка:
-          - В **Feature-Driven** рынках (одежда, игрушки): Идентификаторы (SKU, MPN) — это **L1.3 (Contextual)**. Конституцию (L1.1) формируют физические свойства (размер, материал).
-          - В **Reference-Driven** рынках (автозапчасти, чипы): Идентификаторы — это **L1.1 (Constitutional)**. Без точного номера товар теряет свою суть."
+          - В Feature-Driven рынках (одежда, игрушки): Идентификаторы (SKU, MPN) — это L1.3 (Contextual). Конституцию (L1.1) формируют физические свойства (размер, материал).
+          - В Reference-Driven рынках (автозапчасти, чипы): Идентификаторы — это L1.1 (Constitutional). Без точного номера товар теряет свою суть."
       - "Transaction Prerequisite: Представь двух незнакомцев. Один продает, другой покупает. Атрибуты Ядра — это тот минимум слов, который они должны произнести, чтобы ударить по рукам. Всё остальное — маркетинг (ENRICH)."
-
+      - "Meaningful Nesting (<= 3 Levels): Иерархия должна отражать физическую структуру товара, а не искусственную таксономию ради вложенности. Предпочитай 1–2 уровня и используй 3-й уровень для составных узлов (`specs.storage.{value, unit}`, `dimensions.seat.{width, depth}`). Контейнеры из 1 поля запрещены."
+      - "Structured Measurements ({value, unit}): Для числовых величин с вариативными единицами измерения используй пару `{value: number|integer, unit: string(enum)}` внутри родительского объекта вместо суффиксов `_gb`/`_tb` в именах ключей."
+      - "Example as Structural Probe & Enum Discipline: Если атрибут нельзя однозначно заполнить фактом при EXTRACT — он сформулирован плохо или лишний; если допустимых значений конечное множество — фиксируй `enum`."
 
     # KNOWLEDGE
     reference_model: "Трехосевая Модель Атрибутов (3-Axes Attributes Framework)"
     examples:
       - context: "Автомобильная фара (Aftermarket)"
-        reasoning: "Покупателю критична совместимость. Цвет корпуса — декорация. Конституция — это геометрия и применимость."
-        selected_attributes: ["oem_number", "mounting_side", "compatible_chassis_list"]
+        reasoning: "Покупателю критична точная применимость и тип оптики. Цвет пластика — декорация. Конституция — OEM-артикул, сторона установки (enum), совместимые кузова (array) и тип источника света."
+        selected_attributes:
+          - "oem_number (string)"
+          - "mounting_side (string, enum: [left, right])"
+          - "optics_type (string, enum: [halogen, xenon, led, matrix_led])"
+          - "compatible_chassis (array of string)"
         axis_logic: "L1.1 (Go/No-Go) + L2.1 (Fact) + L3.1 (Inherent)"
-      - context: "Оперативная память (RAM) для сервера"
-        reasoning: "Тайминги важны для оверклокера (Persona), но для сервера критична архитектура и коррекция ошибок."
-        selected_attributes: ["memory_type", "ecc_support", "rank_count", "frequency_rated"]
+      - context: "Игровая консоль / серверный узел (иерархия до 3 уровней)"
+        reasoning: "Технические спецификации группируются в `specs` (уровень 1), объём накопителя моделируется составным узлом `storage` (уровень 2) с `value` и `unit` (уровень 3), наличие привода — `disk_drive` (уровень 2)."
+        selected_attributes:
+          - "specs (object) -> storage (object) -> { value (integer), unit (string, enum: [GB, TB]) }"
+          - "specs (object) -> disk_drive (boolean)"
         axis_logic: "L1.1 (Go/No-Go) + L2.1 (Fact) + L3.1 (Inherent)"
 
     # GUARDRAILS
     constraints:
       - "Запрещено путать Identity с Identification."
-      - "Принцип 'Слепого Проектирования': Ты обязан проектировать схему так, как будто ты видел только название класса объекта ('игровой коврик'), но не сам `Draft_Record`. Любой атрибут, появившийся в схеме, должен быть обоснован требованиями рынка для этого класса, а не его упоминанием в тексте-примере."
+      - "Принцип 'Слепого Проектирования': проектируй схему строго по классу объекта и `market_fingerprint`, не опираясь на случайные детали конкретного объявления."
       - "Запрещено включать в схему данные о состоянии (L3.2) и субъективные оценки (L2.2)."
-      - "Результат должен быть валидной JSON Schema (draft-2020-12)."
-      - "Использование ключа `x-dcl-meta` для метаданных обязательно."
+      - "Структурированный вывод управляется `response_format` (`json_schema.v1`): выводи ТОЛЬКО чистый JSON по контракту `{'attributes': [...]}` без XML-тегов (<schema>, <example>, <self_check>, <schema_typed>)."
+      - "Каждый узел `AttributeDef` (и контейнерный `object`/`array`, и листовой скаляр) обязан содержать валидный блок `x-dcl-meta` с тремя осями; неиспользуемые поля `enum`, `items_type`, `properties` должны быть `null`."
+      - "Максимальная глубина вложенности — 3 уровня (уровень 1 = элемент `attributes[]`); запрещены `object`-обёртки с 1 дочерним свойством."
+      - "`enum` допускается только для скалярного типа `string` (для `array` указывай `items_type`, а при `items_type='object'` — также `properties`)."
 
     # INTERFACE
     slots:
-    - name: "Draft_Record"
-      type: "string"
-      description: "Черновик описания товара для инвентаризации."
-    - name: "Market_Fingerprint"
-      type: "object"
-      description: "Полное информационное поле товарной категории: **Аналитический отчет по категории: <category>."
+      - name: "catalog_name"
+        type: "string"
+        description: "Идентификатор товарного каталога (например, `family_household`)."
+      - name: "market_fingerprint"
+        type: "string"
+        description: "Полное информационное поле товарной категории: аналитический Markdown-отчёт по категории."
 
     output_contract: |
-      Структура выходного файла должна быть валидной JSON Schema.
-      Пример атрибута с правильной мета-разметкой:
-
-      "properties": {
-        "engine_displacement_cc": {
-          "type": "integer",
-          "description": "Рабочий объем двигателя в куб.см.",
-          "x-dcl-meta": {
-            "criticality": "L1.1_Constitutional", // Без этого запчасть не подобрать
-            "objectivity": "L2.1_Factual",        // Технический факт
-            "origin": "L3.1_Inherent"             // Свойство конструкции
+      JSON-объект с корневым полем `attributes` (список `AttributeDef`, поддерживается до 3 уровней вложенности). Пример с `object` 3 уровней (`specs.storage.{value, unit}`), скаляром `enum` и `array`:
+      {
+        "attributes": [
+          {
+            "name": "specs",
+            "type": "object",
+            "description": "Ключевые технические характеристики устройства.",
+            "enum": null,
+            "items_type": null,
+            "properties": [
+              {
+                "name": "storage",
+                "type": "object",
+                "description": "Ёмкость встроенного накопителя.",
+                "enum": null,
+                "items_type": null,
+                "properties": [
+                  {
+                    "name": "value",
+                    "type": "integer",
+                    "description": "Числовое значение объёма накопителя.",
+                    "enum": null,
+                    "items_type": null,
+                    "properties": null,
+                    "x-dcl-meta": {
+                      "criticality": "L1.1_Constitutional",
+                      "objectivity": "L2.1_Factual",
+                      "origin": "L3.1_Inherent"
+                    }
+                  },
+                  {
+                    "name": "unit",
+                    "type": "string",
+                    "description": "Единица измерения объёма накопителя.",
+                    "enum": ["GB", "TB"],
+                    "items_type": null,
+                    "properties": null,
+                    "x-dcl-meta": {
+                      "criticality": "L1.1_Constitutional",
+                      "objectivity": "L2.1_Factual",
+                      "origin": "L3.1_Inherent"
+                    }
+                  }
+                ],
+                "x-dcl-meta": {
+                  "criticality": "L1.1_Constitutional",
+                  "objectivity": "L2.1_Factual",
+                  "origin": "L3.1_Inherent"
+                }
+              },
+              {
+                "name": "disk_drive",
+                "type": "boolean",
+                "description": "Наличие оптического привода.",
+                "enum": null,
+                "items_type": null,
+                "properties": null,
+                "x-dcl-meta": {
+                  "criticality": "L1.1_Constitutional",
+                  "objectivity": "L2.1_Factual",
+                  "origin": "L3.1_Inherent"
+                }
+              }
+            ],
+            "x-dcl-meta": {
+              "criticality": "L1.1_Constitutional",
+              "objectivity": "L2.1_Factual",
+              "origin": "L3.1_Inherent"
+            }
+          },
+          {
+            "name": "region_code",
+            "type": "string",
+            "description": "Региональный стандарт совместимости.",
+            "enum": ["EU", "US", "JP", "Global"],
+            "items_type": null,
+            "properties": null,
+            "x-dcl-meta": {
+              "criticality": "L1.1_Constitutional",
+              "objectivity": "L2.1_Factual",
+              "origin": "L3.1_Inherent"
+            }
+          },
+          {
+            "name": "included_accessories",
+            "type": "array",
+            "description": "Конституционные компоненты комплектации, определяющие базовый комплект поставки.",
+            "enum": null,
+            "items_type": "string",
+            "properties": null,
+            "x-dcl-meta": {
+              "criticality": "L1.1_Constitutional",
+              "objectivity": "L2.1_Factual",
+              "origin": "L3.1_Inherent"
+            }
           }
-        }
-      },
-      "required": ["engine_displacement_cc"]
+        ]
+      }
 
     # VERIFICATION
     checklist:
-      - "Является ли вывод валидной JSON Schema?"
-      - "Содержат ли все атрибуты блок `x-dcl-meta`?"
-      - "Включены ли только конституционные атрибуты (строгое пересечение L1.1 + L2.1 + L3.1)?"
-      - "Помечены ли ключевые поля как required?"
+      - "Содержат ли ВСЕ узлы `AttributeDef` (контейнеры и листья) блок `x-dcl-meta` с тремя осями?"
+      - "Включены ли только конституционные атрибуты (строгое пересечение L1.1 + L2.1 + L3.1) без данных о состоянии (L3.2) и субъективных оценок (L2.2)?"
+      - "Не превышает ли глубина вложенности 3 уровней и отсутствуют ли `object`-обёртки из одного поля?"
+      - "Оформлены ли составные измерения через `{value, unit}` и закрытые словари через `enum` на скалярном `string`?"
+      - "Согласованы ли `type`, `items_type`, `properties` и `null` на неиспользуемых полях, и однозначно ли схема заполняется на этапе `EXTRACT` (с учётом Null Policy)?"
     ```
 
-    # Frame 12:
+    # Frame 3:
+    ```
+    Entity('Attribute_Schema')
+    ```
+
+    # Frame 4:
     ```yaml
     # METADATA
     id: knowledges/framework/3-axes_attribute_model
@@ -163,6 +246,7 @@ invocation:
     # IDENTITY
     role: "Attribute Representation Framework"
     worldview: "Атрибуты товара — это не плоский список характеристик, а векторы в трехмерном пространстве. Понимание вклада атрибута в 'товарность' объекта невозможно без анализа трех его координат: насколько он критичен для сделки (Criticality), насколько он объективен (Objectivity) и какова природа его возникновения (Origin)."
+
 
     # KNOWLEDGE
     format: "markdown"
@@ -199,6 +283,8 @@ invocation:
       *   **Роль в покупке:** **Снижение неопределенности и построение доверия.** Сигнализирует о компетентности продавца.
       *   **Примеры:** `габаритные_размеры` (если не критичны для ниши), `вес`, `страна_производитель`, `комплектация`, `бренд` и `модель` в типовых сценариях использования и commodity-рынках.
 
+      ---
+
       ### Ось 2: "Объективность" (Objectivity)
       *Отвечает на вопрос: "Насколько значение атрибута измеримо и проверяемо?"*
 
@@ -213,6 +299,8 @@ invocation:
           *   `качество_боке: 'сливочное'`.
           *   `лучше_всего_для: 'портретов'`.
           *   `дизайн: 'минималистичный'`.
+
+      ---
 
       ### Ось 3: "Происхождение" (Origin)
       *Отвечает на вопрос: "Откуда берется знание об этом атрибуте?"*
