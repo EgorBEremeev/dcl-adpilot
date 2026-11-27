@@ -15,7 +15,7 @@ invocation:
   thinking_level: "medium"
   store: false
   fallback_models:
-    - model_id: "gemini-3-flash-preview"
+    - model_id: "gemini-3-flash"
       thinking_level: "medium"
     - model_id: "gemini-3.8-flash"
       thinking_level: "medium"
